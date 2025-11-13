@@ -18,9 +18,11 @@
         </form>
 
         <div class="signup-link">
-            Đã có tài khoản?
-            <a href="login.jsp">Đăng nhập</a>
-        </div>
+    Đã có tài khoản?
+    <form action="LoginServlet" method="get" style="display:inline;">
+        <input type="submit" value="Đăng nhập" style="background:none;border:none;color:blue;text-decoration:underline;cursor:pointer;">
+    </form>
+</div>
     </div>
 </body>
 </html>
