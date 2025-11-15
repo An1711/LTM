@@ -10,13 +10,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import model.BEAN.Account;
+import model.BO.CheckLoginBO;
 import model.DAO.CheckLoginDAO;
 
 @WebServlet("/CheckLoginServlet")
 public class CheckLoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private CheckLoginDAO checkLoginDAO = new CheckLoginDAO();
+   
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -27,7 +28,7 @@ public class CheckLoginServlet extends HttpServlet {
         String username = request.getParameter("user");
         String password = request.getParameter("pass");
 
-        Account acc = checkLoginDAO.checkLogin(username, password);
+        Account acc = CheckLoginBO.checkLogin(username, password);
 
         HttpSession session = request.getSession();
 
