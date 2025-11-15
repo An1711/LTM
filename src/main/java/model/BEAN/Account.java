@@ -11,7 +11,8 @@ public class Account {
 		this.username = username;
 	}
 
-	public String getPassword() {
+
+	public String getPasword() {
 		return password;
 	}
 
