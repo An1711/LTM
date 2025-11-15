@@ -1,7 +1,7 @@
 package model.BEAN;
 
 public class Account {
-	String username,pasword;
+	String username,password;
 
 	public String getUsername() {
 		return username;
@@ -12,10 +12,10 @@ public class Account {
 	}
 
 	public String getPasword() {
-		return pasword;
+		return password;
 	}
 
 	public void setPasword(String pasword) {
-		this.pasword = pasword;
+		this.password = pasword;
 	}
 }
