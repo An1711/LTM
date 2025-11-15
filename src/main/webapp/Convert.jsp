@@ -48,6 +48,9 @@
                 </div>
             </div>
         </section>
+        <form action="BackServlet" method="get">
+   			<button class="back-button">BACK</button>
+		</form>
     </main>
 
     <script>

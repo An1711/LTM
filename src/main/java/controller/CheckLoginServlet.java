@@ -33,12 +33,10 @@ public class CheckLoginServlet extends HttpServlet {
         HttpSession session = request.getSession();
 
         if (acc != null) {
-         
             session.removeAttribute("error"); 
             response.sendRedirect("Home.jsp");
 
         } else {
-            // lỗi login
             session.setAttribute("error", "Tài khoản hoặc mật khẩu không đúng!");
             response.sendRedirect("Login.jsp");  
         }

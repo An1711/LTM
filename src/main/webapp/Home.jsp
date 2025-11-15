@@ -16,7 +16,7 @@
         String appName = "DocConverter";
         String appVersion = "1.0";
     %>
-
+	
     <div class="frame">
         <div class="body">
             <header class="header">
@@ -30,7 +30,15 @@
                             />
                             <h1 class="logo-text"><%= appName %></h1>
                         </div>
-                        <button class="logout-button"> <div class = "option-content"> <h3 class="option-title">Logout</h3></div></button>
+                        <div class="logout-container">
+                        <form action="LogoutServlet" method="post">
+    						<button class="logout-button">
+        					<img src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded.png" alt="Logout Icon" class="logout-icon">
+        					<span>Logout</span>
+    						</button>
+    						</form>
+						</div>
+                        
                     </div>
                 </div>
             </header>
@@ -49,8 +57,10 @@
                 <section class="conversion-options">
                     <div class="options-container">
                         <div class="options-grid">
+                         
                             <div class="option-column">
-                                <button class="conversion-option" onclick="handleDocToPdf()">
+                            <form action="ConvertServlet" method= "post">
+                                <button class="conversion-option">
                                     <div class="option-content">
                                         <img
                                             src="https://api.builder.io/api/v1/image/assets/734b695beb214eada95f691d10c9fe3f/a99e9085f77b25b562f00f295b15f73a315b2341?placeholderIfAbsent=true"
@@ -61,8 +71,12 @@
                                         <p class="option-description">Convert Word documents to PDF format</p>
                                     </div>
                                 </button>
+                                </form>
                             </div>
+                           
+                            
                             <div class="option-column">
+                            <form action="ConvertServlet" method= "post">
                                 <button class="conversion-option" onclick="handlePdfToDoc()">
                                     <div class="option-content">
                                         <img
@@ -74,7 +88,9 @@
                                         <p class="option-description">Convert PDF files to Word documents</p>
                                     </div>
                                 </button>
+                                </form>
                             </div>
+                            
                         </div>
                     </div>
                 </section>
