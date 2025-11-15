@@ -13,13 +13,12 @@
     <%
     String err = (String) session.getAttribute("error");
     if (err != null) {
-%>
+	%>
         <p style="color:red;"><%= err %></p>
-<%
+	<%
         session.removeAttribute("error"); 
     }
-%>
-
+	%>
     
     <form action="CheckLoginServlet" method="post">
         <input name="user" type="text" placeholder="Tài Khoản">
