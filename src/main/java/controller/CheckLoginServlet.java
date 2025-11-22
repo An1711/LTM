@@ -11,8 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import model.BEAN.Account;
-
+import model.BEAN.Link;
 import model.BO.CheckLoginBO;
+import model.BO.GetDataBO;
 import model.DAO.CheckLoginDAO;
 
 
@@ -37,7 +38,7 @@ public class CheckLoginServlet extends HttpServlet {
         if (acc != null) {
             session.removeAttribute("error"); 
             request.getSession().setAttribute("userID", acc.getID());
-            Vector<Link> list = dataBO.getList(acc.getID());
+            Vector<Link> list = GetDataBO.getList(acc.getID());
             session.setAttribute("links", list);
             response.sendRedirect("Home.jsp");
             System.out.println("Session userID: " + request.getSession().getAttribute("userID"));
