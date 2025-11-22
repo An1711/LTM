@@ -8,7 +8,7 @@ import model.BEAN.Account;
 
 public class CheckLoginDAO {
 
-    public Account checkLogin(String username, String password) {
+    public static Account checkLogin(String username, String password) {
         String sql = "SELECT * FROM account WHERE username = ? AND password = ?";
         try (
             Connection con = ConnectDB.getConnection();
