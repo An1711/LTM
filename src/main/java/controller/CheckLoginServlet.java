@@ -39,7 +39,7 @@ public class CheckLoginServlet extends HttpServlet {
             response.sendRedirect("Home.jsp");
             System.out.println("Session userID: " + request.getSession().getAttribute("userID"));
         } else {
-            session.setAttribute("error", "Tài khoản hoặc mật khẩu không đúng!");
+            session.setAttribute("error", "Tài khoản hoặc mật khẩu không đúng");
             response.sendRedirect("Login.jsp");  
         }
     }
