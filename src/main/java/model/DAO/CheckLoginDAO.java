@@ -10,7 +10,6 @@ public class CheckLoginDAO {
 
     public static Account checkLogin(String username, String password) {
         String sql = "SELECT * FROM account WHERE username = ? AND password = ?";
-
         try (
             Connection con = ConnectDB.getConnection();
             PreparedStatement ps = con != null ? con.prepareStatement(sql) : null
@@ -25,6 +24,7 @@ public class CheckLoginDAO {
                     Account acc = new Account();
                     acc.setUsername(rs.getString("username"));
                     acc.setPasword(rs.getString("password")); 
+                    acc.setID(rs.getInt("ID"));
                     return acc;
                 }
             }
