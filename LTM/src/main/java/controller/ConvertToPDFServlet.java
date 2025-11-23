@@ -73,7 +73,7 @@ public class ConvertToPDFServlet extends HttpServlet {
 
         // Send file and convert request to Network server over socket
         try (InputStream fileInput = filePart.getInputStream();
-             Socket socket = new Socket("localhost", 8088);
+             Socket socket = new Socket("26.241.40.229", 8088);
              OutputStream out = socket.getOutputStream();
              BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 

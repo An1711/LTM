@@ -14,7 +14,7 @@ import client.SocketClient;
 public class RegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private final SocketClient socketClient = new SocketClient("localhost", 8088);
+    private final SocketClient socketClient = new SocketClient("26.241.40.229", 8088);
 
     public RegisterServlet() {
         super();
