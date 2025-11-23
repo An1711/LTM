@@ -43,7 +43,7 @@ public class ConvertToPDFServlet extends HttpServlet {
             Files.copy(in, temp.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
 
-        FileSocketClient fileClient = new FileSocketClient("26.241.40.229", 8088, 10000);
+        FileSocketClient fileClient = new FileSocketClient("localhost", 8088, 10000);
         try {
             String result = fileClient.uploadFile(temp, type, userID, new File(downloadPath));
             if (result != null && result.startsWith("OK|")) {

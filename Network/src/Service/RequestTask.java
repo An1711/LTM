@@ -18,8 +18,9 @@ public class RequestTask implements Runnable {
             BufferedInputStream bin = new BufferedInputStream(socket.getInputStream());
             BufferedOutputStream bout = new BufferedOutputStream(socket.getOutputStream())
         ) {
+
             // ================================================================
-            // 1. ĐỌC HEADER (1 dòng duy nhất)
+            // 1. ĐỌC HEADER (1 dòng)
             // ================================================================
             String header = readLine(bin);
             if (header == null || header.trim().isEmpty()) {
@@ -27,12 +28,16 @@ public class RequestTask implements Runnable {
                 return;
             }
 
-            // Debug
             System.out.println("[RequestTask] HEADER = " + header);
 
             // ================================================================
             // 2. PHÂN LOẠI COMMAND
             // ================================================================
+            
+            if (header.startsWith("REGISTER|")) {
+                handleRegister(header, bout);
+                return;
+            }
 
             if (header.startsWith("LOGIN|")) {
                 handleLogin(header, bout);
@@ -54,7 +59,6 @@ public class RequestTask implements Runnable {
                 return;
             }
 
-            // Nếu không khớp command nào
             writeLine(bout, "FAIL|UNKNOWN_COMMAND");
 
         } catch (Exception e) {
@@ -70,6 +74,23 @@ public class RequestTask implements Runnable {
     }
 
     // ======================================================================
+    //  REGISTER|username|password
+    // ======================================================================
+    private void handleRegister(String header, BufferedOutputStream bout) throws IOException {
+        String[] parts = header.split("\\|", 3);
+
+        String user = parts.length > 1 ? parts[1] : "";
+        String pass = parts.length > 2 ? parts[2] : "";
+
+        // Gọi ServerService xử lý
+        String result = ServerService.handleRegister(user, pass);
+        // result phải có dạng: OK|REGISTER_SUCCESS hoặc FAIL|msg
+
+        writeLine(bout, result);
+        bout.flush();
+    }
+
+    // ======================================================================
     //  LOGIN|username|password
     // ======================================================================
     private void handleLogin(String header, BufferedOutputStream bout) throws IOException {
@@ -77,7 +98,7 @@ public class RequestTask implements Runnable {
         String user = parts.length > 1 ? parts[1] : "";
         String pass = parts.length > 2 ? parts[2] : "";
 
-        String result = ServerService.handleLogin(user, pass);  // OK|id hoặc FAIL|msg
+        String result = ServerService.handleLogin(user, pass);
         writeLine(bout, result);
         bout.flush();
     }
@@ -95,19 +116,12 @@ public class RequestTask implements Runnable {
         int userId = Integer.parseInt(parts[1]);
         String payload = ServerService.handleGetData(userId);
 
-        // payload phải có dạng:
-        // DATA|n\n
-        // row\n
-        // row\n
-        // END\n
-
         bout.write(payload.getBytes(StandardCharsets.UTF_8));
         bout.flush();
     }
 
     // ======================================================================
     //  UPLOAD|type|userId|filename|filesize
-    //  + binary file
     // ======================================================================
     private void handleUpload(String header, BufferedInputStream bin, BufferedOutputStream bout) throws Exception {
 
@@ -122,15 +136,12 @@ public class RequestTask implements Runnable {
         String filename = parts[3];
         long fileSize = Long.parseLong(parts[4]);
 
-        // Chuẩn bị thư mục uploads
         File uploads = new File("uploads");
         if (!uploads.exists()) uploads.mkdirs();
 
         File temp = new File(uploads, System.currentTimeMillis() + "_" + filename);
 
-        // ============================================================
-        // 1. NHẬN FILE BINARY
-        // ============================================================
+        // Nhận file binary
         try (FileOutputStream fos = new FileOutputStream(temp)) {
             long remaining = fileSize;
             byte[] buf = new byte[8192];
@@ -151,9 +162,6 @@ public class RequestTask implements Runnable {
             return;
         }
 
-        // ============================================================
-        // 2. XỬ LÝ CONVERT
-        // ============================================================
         String convertResult = ServerService.processConvert(type, userId, filename, temp.getAbsolutePath());
 
         if (convertResult == null || !convertResult.startsWith("OK|")) {
@@ -162,7 +170,6 @@ public class RequestTask implements Runnable {
             return;
         }
 
-        // Lấy path file output
         String outPath = convertResult.substring(3).trim();
         File outFile = new File(outPath);
 
@@ -174,9 +181,6 @@ public class RequestTask implements Runnable {
 
         long outSize = outFile.length();
 
-        // ============================================================
-        // 3. GỬI HEADER + FILE BINARY NGƯỢC LẠI CHO CLIENT
-        // ============================================================
         String outHeader = "FILE|OK|" + outFile.getName() + "|" + outSize + "\n";
         bout.write(outHeader.getBytes(StandardCharsets.UTF_8));
         bout.flush();

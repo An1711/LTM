@@ -24,7 +24,7 @@ public class CheckLoginServlet extends HttpServlet {
 
         String username = request.getParameter("user");
         String password = request.getParameter("pass");
-        TextSocketClient socketClient = new TextSocketClient("26.241.40.229", 8088, 5000);
+        TextSocketClient socketClient = new TextSocketClient("localhost", 8088, 5000);
 
         try {
             String cmd = String.format("LOGIN|%s|%s", username, password);
