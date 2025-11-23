@@ -8,13 +8,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import model.DAO.RegisterDAO;
+import client.SocketClient;
 
 @WebServlet("/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private RegisterDAO registerDAO = new RegisterDAO();
+    private final SocketClient socketClient = new SocketClient("localhost", 8088);
 
     public RegisterServlet() {
         super();
@@ -56,20 +56,20 @@ public class RegisterServlet extends HttpServlet {
         }
 
        
-        if (registerDAO.isUsernameExists(username)) {
-            request.setAttribute("error", "Tên đăng nhập đã tồn tại, hãy chọn tên khác!");
-            request.getRequestDispatcher("Register.jsp").forward(request, response);
-            return;
-        }
-
-       
-        boolean ok = registerDAO.register(username, password);
-        if (ok) {
-           
-            request.setAttribute("message", "Tạo tài khoản thành công, hãy đăng nhập!");
-            request.getRequestDispatcher("Login.jsp").forward(request, response);
-        } else {
-            request.setAttribute("error", "Có lỗi xảy ra, vui lòng thử lại!");
+        try {
+            // send register command to server: REGISTER|username|password
+            String cmd = String.format("REGISTER|%s|%s", username, password);
+            String resp = socketClient.sendCommand(cmd);
+            if (resp != null && resp.startsWith("OK")) {
+                request.setAttribute("message", "Tạo tài khoản thành công, hãy đăng nhập!");
+                request.getRequestDispatcher("Login.jsp").forward(request, response);
+            } else {
+                String err = (resp == null) ? "Server không phản hồi" : resp;
+                request.setAttribute("error", "Có lỗi: " + err);
+                request.getRequestDispatcher("Register.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            request.setAttribute("error", "Lỗi kết nối tới server: " + e.getMessage());
             request.getRequestDispatcher("Register.jsp").forward(request, response);
         }
     }

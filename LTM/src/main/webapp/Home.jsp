@@ -156,18 +156,6 @@
 			%>
 
 			</div>
-
-
-                        <footer class="conversions-footer">
-                            <button class="view-all-button" onclick="viewAllConversions()">
-                                <span class="button-text">View All Conversions</span>
-                                <img
-                                    src="https://api.builder.io/api/v1/image/assets/734b695beb214eada95f691d10c9fe3f/34adeb1d3f5765661e4275b5f7ff2927ceeea41e?placeholderIfAbsent=true"
-                                    alt="Arrow right"
-                                    class="arrow-icon"
-                                />
-                            </button>
-                        </footer>
                     </div>
                 </section>
             </main>
@@ -180,17 +168,5 @@
         <p>Page generated on: <%= currentDate %></p>
         <p>Application: <%= appName %> v<%= appVersion %></p>
     </div>
-
-    <script>
-        function viewAllConversions() {
-            console.log('Viewing all conversions');
-            // Could redirect to another JSP page
-            window.location.href = 'allConversions.jsp';
-        }
-
-        // JSP can inject server-side data into JavaScript
-        var serverTime = '<%= currentDate %>';
-        console.log('Page loaded at server time:', serverTime);
-    </script>
 </body>
 </html>
