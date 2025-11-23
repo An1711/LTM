@@ -2,9 +2,14 @@
 
 package controller;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,16 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import model.BO.ConvertToPDFBO;
-
 @WebServlet("/ConvertToPDFServlet")
 @MultipartConfig
 public class ConvertToPDFServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private ConvertToPDFBO convertToPDFBO;
-
     public void init() {
-        convertToPDFBO = new ConvertToPDFBO();
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -70,26 +70,38 @@ public class ConvertToPDFServlet extends HttpServlet {
         Path tempFilePath = Paths.get(uploadPath + File.separator + originalFileName);
         String downloadLink = null;
         int type = Integer.parseInt((String)request.getSession().getAttribute("type"));
-        try (InputStream input = filePart.getInputStream()) {
-        	if(type == 1) {
-            Files.copy(input, tempFilePath, StandardCopyOption.REPLACE_EXISTING);
-            downloadLink = convertToPDFBO.convertDocToPdfAndSave(tempFilePath.toString(), originalFileName, downloadPath, userID);
-        	}
-        	else {
-        		Files.copy(input, tempFilePath, StandardCopyOption.REPLACE_EXISTING);
-                downloadLink = convertToPDFBO.convertPdfToDocAndSave(tempFilePath.toString(), originalFileName, downloadPath, userID);
-        	}
-            
+
+        // Send file and convert request to Network server over socket
+        try (InputStream fileInput = filePart.getInputStream();
+             Socket socket = new Socket("localhost", 8088);
+             OutputStream out = socket.getOutputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+            long size = filePart.getSize();
+            String header = String.format("CONVERT|%d|%d|%s|%d", type, userID, originalFileName, size);
+            // send header line
+            out.write((header + "\n").getBytes("UTF-8"));
+            out.flush();
+
+            // stream file bytes
+            byte[] buffer = new byte[8192];
+            int r;
+            while ((r = fileInput.read(buffer)) != -1) {
+                out.write(buffer, 0, r);
+            }
+            out.flush();
+
+            // read response line
+            String resp = reader.readLine();
+            if (resp != null && resp.startsWith("OK|")) {
+                downloadLink = resp.substring(3);
+            } else {
+                request.setAttribute("errorMessage", resp == null ? "Không có phản hồi từ server" : resp);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("errorMessage", "Lỗi trong quá trình xử lý file.");
-        } finally {
-            // Xóa file tạm sau khi đã xử lý xong (dù thành công hay thất bại)
-            try {
-                Files.deleteIfExists(tempFilePath);
-            } catch (IOException e) {
-                e.printStackTrace(); // Ghi log lỗi xóa file tạm nếu có
-            }
+            request.setAttribute("errorMessage", "Lỗi trong quá trình gửi dữ liệu tới server: " + e.getMessage());
         }
         
         // Trả kết quả về cho view

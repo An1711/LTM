@@ -31,7 +31,9 @@ public class CheckLoginServlet extends HttpServlet {
 
         HttpSession session = request.getSession();
         try {
-            String cmd = String.format("LOGIN|%s|%s", username, password);
+            String cmd
+            
+            = String.format("LOGIN|%s|%s", username, password);
             String resp = socketClient.sendCommand(cmd);
             // expected response: OK|<userID>  or FAIL|message
             if (resp != null && resp.startsWith("OK|")) {
