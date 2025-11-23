@@ -1,9 +1,6 @@
 package Conection;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -14,20 +11,24 @@ import java.util.concurrent.TimeUnit;
 import Service.RequestTask;
 
 public class ServerConnection {
+
     private ServerSocket server;
     private final ThreadPoolExecutor pool;
 
     public ServerConnection(int port) {
         try {
             server = new ServerSocket(port);
-            System.out.println("Server đang lắng nghe tại cổng: " + port);
+            System.out.println("[Server] Listening at port: " + port);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("[Server] Cannot start: " + e.getMessage());
         }
 
-        // bounded queue size 10 as requested, with 4 worker threads
-        this.pool = new ThreadPoolExecutor(
-                4, 4,
+        // ThreadPool:
+        // 4 worker threads
+        // Queue size = 10
+        pool = new ThreadPoolExecutor(
+                4,     // core
+                4,     // max
                 0L, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<>(10)
         );
@@ -36,35 +37,35 @@ public class ServerConnection {
     public void start() {
         while (true) {
             try {
-                // Chờ client kết nối
+                // Accept new client
                 Socket socket = server.accept();
-                System.out.println("Client đã kết nối: " + socket.getInetAddress());
+                System.out.println("[Server] Client connected: " + socket.getRemoteSocketAddress());
 
-                // Đọc dữ liệu từ client
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+                // IMPORTANT:
+                // Không đọc bất kỳ byte nào ở đây!
+                // Không dùng BufferedReader, PrintWriter, readLine().
+                // Giao hết socket cho RequestTask để xử lý chuẩn giao thức.
 
-                String message = reader.readLine();
-                System.out.println("Nhận từ client: " + message);
-
-                RequestTask task = new RequestTask(socket, message);
+                RequestTask task = new RequestTask(socket);
                 try {
                     pool.execute(task);
-                } catch (RejectedExecutionException rex) {
-                    // queue full: inform client and close socket
-                    System.out.println("Queue đầy - từ chối yêu cầu");
-                    writer.println("FAIL|QUEUE_FULL");
-                    writer.flush();
-                    try { socket.close(); } catch (IOException ignored) {}
+                } catch (RejectedExecutionException rx) {
+                    System.out.println("[Server] Queue full — rejecting client");
+
+                    try {
+                        socket.getOutputStream().write("FAIL|QUEUE_FULL\n".getBytes("UTF-8"));
+                        socket.getOutputStream().flush();
+                    } catch (Exception ignore) {}
+
+                    try { socket.close(); } catch (Exception ignore) {}
                 }
 
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("[Server] Accept error: " + e.getMessage());
             }
         }
     }
 
-    // Chạy server
     public static void main(String[] args) {
         ServerConnection server = new ServerConnection(8088);
         server.start();

@@ -1,118 +1,62 @@
-// ConvertToPDFServlet.java - PHIÊN BẢN ĐÃ SỬA
-
 package controller;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-
-import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
+import javax.servlet.http.*;
+import javax.servlet.*;
+import java.io.IOException;
+
+import client.FileSocketClient;
 
 @WebServlet("/ConvertToPDFServlet")
 @MultipartConfig
 public class ConvertToPDFServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    public void init() {
-    }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public ConvertToPDFServlet() { super(); }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
         Part filePart = request.getPart("fileUpload");
         String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-
-        if (originalFileName == null || originalFileName.isEmpty()) {
-            request.setAttribute("errorMessage", "Vui lòng chọn một file để chuyển đổi.");
-            request.getRequestDispatcher("Convert.jsp").forward(request, response);
-            return;
-        }
-
-//        if (!originalFileName.toLowerCase().endsWith(".doc") && !originalFileName.toLowerCase().endsWith(".docx")) {
-//            request.setAttribute("errorMessage", "Loại file không hợp lệ. Vui lòng chỉ chọn file .doc hoặc .docx.");
-//            request.getRequestDispatcher("Convert.jsp").forward(request, response);
-//            return;
-//        }
-        
-        // SỬA LẠI ĐƯỜNG DẪN - Lấy đường dẫn thực của ứng dụng web
         String appPath = request.getServletContext().getRealPath("");
-        
-        // 1. Tạo thư mục UPLOADS để lưu file tạm
-        String uploadPath = appPath + File.separator + "uploads";
-        File uploadDir = new File(uploadPath);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-        
-        // 2. Tạo thư mục DOWNLOADS để lưu file kết quả
         String downloadPath = appPath + File.separator + "downloads";
-        File downloadDir = new File(downloadPath);
-        if (!downloadDir.exists()) {
-            downloadDir.mkdirs();
+        new File(downloadPath).mkdirs();
+
+        int userID = (int) request.getSession().getAttribute("userID");
+        int type = Integer.parseInt((String) request.getSession().getAttribute("type"));
+
+        // save uploaded file to temp upload dir first
+        File uploads = new File(appPath, "uploads");
+        if (!uploads.exists()) uploads.mkdirs();
+        File temp = new File(uploads, System.currentTimeMillis() + "_" + originalFileName);
+        try (InputStream in = filePart.getInputStream()) {
+            Files.copy(in, temp.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
-        
-        int userID = (int)request.getSession().getAttribute("userID");
-        
-        Path tempFilePath = Paths.get(uploadPath + File.separator + originalFileName);
-        String downloadLink = null;
-        int type = Integer.parseInt((String)request.getSession().getAttribute("type"));
 
-        // Send file and convert request to Network server over socket
-        try (InputStream fileInput = filePart.getInputStream();
-             Socket socket = new Socket("26.241.40.229", 8088);
-             OutputStream out = socket.getOutputStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-
-            long size = filePart.getSize();
-            String header = String.format("CONVERT|%d|%d|%s|%d", type, userID, originalFileName, size);
-            // send header line
-            out.write((header + "\n").getBytes("UTF-8"));
-            out.flush();
-
-            // stream file bytes
-            byte[] buffer = new byte[8192];
-            int r;
-            while ((r = fileInput.read(buffer)) != -1) {
-                out.write(buffer, 0, r);
-            }
-            out.flush();
-
-            // read response line
-            String resp = reader.readLine();
-            if (resp != null && resp.startsWith("OK|")) {
-                downloadLink = resp.substring(3);
+        FileSocketClient fileClient = new FileSocketClient("26.241.40.229", 8088, 10000);
+        try {
+            String result = fileClient.uploadFile(temp, type, userID, new File(downloadPath));
+            if (result != null && result.startsWith("OK|")) {
+                // result = OK|absoluteLocalPath
+                String localPath = result.substring(3);
+                String fileName = new File(localPath).getName();
+                request.setAttribute("downloadLink", "downloads/" + fileName);
             } else {
-                request.setAttribute("errorMessage", resp == null ? "Không có phản hồi từ server" : resp);
+                request.setAttribute("errorMessage", result == null ? "No response" : result);
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("errorMessage", "Lỗi trong quá trình gửi dữ liệu tới server: " + e.getMessage());
+            request.setAttribute("errorMessage", "Lỗi kết nối: " + e.getMessage());
+        } finally {
+            temp.delete();
         }
-        
-        // Trả kết quả về cho view
-        if (downloadLink != null) {
-            request.setAttribute("downloadLink", downloadLink);
-        } else {
-            if (request.getAttribute("errorMessage") == null) {
-                request.setAttribute("errorMessage", "Có lỗi xảy ra trong quá trình chuyển đổi file.");
-            }
-        }
-        
+
         request.getRequestDispatcher("Convert.jsp").forward(request, response);
     }
 }

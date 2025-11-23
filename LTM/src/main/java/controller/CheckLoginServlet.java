@@ -1,88 +1,82 @@
 package controller;
 
 import java.io.IOException;
-import java.util.*;
-
+import java.util.Vector;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 
-import client.SocketClient;
+import client.TextSocketClient;
 import model.BEAN.Link;
-
 
 @WebServlet("/CheckLoginServlet")
 public class CheckLoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private final SocketClient socketClient = new SocketClient("26.241.40.229", 8088);
+    public CheckLoginServlet() { super(); }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession();
 
         String username = request.getParameter("user");
         String password = request.getParameter("pass");
+        TextSocketClient socketClient = new TextSocketClient("26.241.40.229", 8088, 5000);
 
-        HttpSession session = request.getSession();
         try {
-            String cmd
-            
-            = String.format("LOGIN|%s|%s", username, password);
+            String cmd = String.format("LOGIN|%s|%s", username, password);
             String resp = socketClient.sendCommand(cmd);
-            // expected response: OK|<userID>  or FAIL|message
             if (resp != null && resp.startsWith("OK|")) {
-                // fallback parsing
-                String userIdStr = resp.substring(3);
-                int userId = Integer.parseInt(userIdStr.trim());
+                int userId = Integer.parseInt(resp.substring(3).trim());
                 session.removeAttribute("error");
                 session.setAttribute("userID", userId);
 
-                // request user's data list
+                // get data
                 String dataResp = socketClient.sendCommand("GETDATA|" + userId);
                 Vector<Link> list = new Vector<>();
-                if (dataResp != null && dataResp.startsWith("LINKS|")) {
-                    String payload = dataResp.substring(6); // after LINKS|
+                if (dataResp != null && dataResp.startsWith("DATA|")) {
+                    // simple single-line payload support if you implement differently, adjust accordingly
+                    // For now assume ServerService returns "DATA|<payload...>" or multi-line - you'd adapt
+                    // Here we treat payload as after "DATA|"
+                    String payload = dataResp.substring(5);
                     if (!payload.trim().isEmpty()) {
                         String[] items = payload.split(";");
                         for (String item : items) {
-                            // expected each item: id,type,link
                             String[] f = item.split(",", 3);
                             if (f.length >= 3) {
                                 try {
                                     int id = Integer.parseInt(f[0].trim());
-                                    boolean type = "1".equals(f[1].trim()) || "true".equalsIgnoreCase(f[1].trim());
+                                    boolean type = "1".equals(f[1].trim());
                                     String link = f[2].trim();
                                     list.add(new Link(id, link, type));
-                                } catch (NumberFormatException ignored) {
-                                }
+                                } catch (NumberFormatException ignored) {}
                             }
                         }
                     }
                 }
+
                 session.setAttribute("links", list);
-                response.sendRedirect("Home.jsp");
-                System.out.println("Session userID: " + request.getSession().getAttribute("userID"));
+                response.sendRedirect(request.getContextPath() + "/Home.jsp");
+                return;
             } else {
-                String msg = (resp == null) ? "Server không phản hồi" : resp;
-                session.setAttribute("error", "Tài khoản hoặc mật khẩu không đúng! " + msg);
-                response.sendRedirect("Login.jsp");
+                String msg = (resp == null) ? "Server không phản hồi" : "Tài khoản hoặc mật khẩu không đúng";
+                session.setAttribute("error", msg);
+                response.sendRedirect(request.getContextPath() + "/Login.jsp");
+                return;
             }
         } catch (Exception e) {
             session.setAttribute("error", "Lỗi kết nối tới server: " + e.getMessage());
-            response.sendRedirect("Login.jsp");
+            response.sendRedirect(request.getContextPath() + "/Login.jsp");
+            return;
         }
     }
-
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.sendRedirect("Login.jsp");
+        response.sendRedirect(request.getContextPath() + "/Login.jsp");
     }
 }
