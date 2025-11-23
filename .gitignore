@@ -34,3 +34,6 @@ Desktop.ini
 # === IDE specific ===
 .idea/
 *.iml
+
+# === Add Servers folder to ignore ===
+Servers/

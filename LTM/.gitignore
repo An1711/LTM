@@ -1,0 +1,36 @@
+# === Eclipse-specific ===
+.metadata/
+.recommenders/
+.settings/org.eclipse.core.resources.prefs
+
+# === Build directories ===
+/build/
+/bin/
+/dist/
+/target/
+
+# === Temporary files ===
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# === Java ===
+*.class
+*.log
+
+# === Server generated files ===
+.work
+.jsp-generated/
+
+# === OS files ===
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# === IDE specific ===
+.idea/
+*.iml

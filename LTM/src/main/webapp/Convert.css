@@ -1,0 +1,241 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    color: #111827;
+}
+
+/* Main container */
+.main-container {
+    display: flex;
+    flex-direction: column;
+    padding: 3.5rem 1.5rem;
+    text-align: center;
+}
+
+/* Header section */
+.header-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 5rem 0.625rem;
+    padding-bottom: 0.625rem;
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    width: 656px;
+}
+
+.main-title {
+    align-self: center;
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #111827;
+    max-width: 100%;
+}
+
+.main-description {
+    margin-top: 1.25rem;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    color: #4b5563;
+    max-width: 100%;
+}
+
+/* Upload section */
+.upload-section {
+    align-self: center;
+    padding: 1.5rem 1.5rem 2.75rem;
+    margin-top: 2.75rem;
+    width: 100%;
+    font-size: 1rem;
+    max-width: 946px;
+}
+
+.upload-container {
+    display: flex;
+    overflow: hidden;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1px;
+    background-color: white;
+    border-radius: 1rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+}
+
+.upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem;
+    max-width: 100%;
+}
+
+.upload-zone {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem;
+    border-radius: 0.75rem;
+    border: 2px dashed #d1d5db;
+    max-width: 100%;
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 2.25rem;
+    max-width: 100%;
+}
+
+.upload-icon {
+    object-fit: contain;
+    align-self: center;
+    width: 4rem;
+    border-radius: 50%;
+    aspect-ratio: 1;
+}
+
+.upload-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 5rem;
+    margin-top: 1rem;
+    max-width: 100%;
+}
+
+.upload-text-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%;
+    width: 287px;
+}
+
+.upload-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.375;
+    color: #111827;
+}
+
+.upload-subtitle {
+    align-self: stretch;
+    margin-top: 1rem;
+    color: #6b7280;
+}
+
+/* Upload button */
+.upload-button {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    margin-top: 1.5rem;
+    max-width: 100%;
+    font-weight: 500;
+    color: white;
+    background-color: #2563eb;
+    border: none;
+    border-radius: 0.5rem;
+    width: 153px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.upload-button:hover {
+    background-color: #1d4ed8;
+}
+
+.upload-button:active {
+    background-color: #1e40af;
+}
+
+.button-icon {
+    object-fit: contain;
+    flex-shrink: 0;
+    aspect-ratio: 0.75;
+    width: 18px;
+}
+
+.button-text {
+    padding: 1px 1px 0.625rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 3.5rem 1.25rem;
+    }
+
+    .header-section {
+        padding: 0 1.25rem 0.625rem;
+    }
+
+    .main-title {
+        max-width: 100%;
+    }
+
+    .main-description {
+        max-width: 100%;
+    }
+
+    .upload-section {
+        padding: 1.5rem 1.25rem 2.75rem;
+        margin-top: 2.5rem;
+        max-width: 100%;
+    }
+
+    .upload-wrapper {
+        padding: 1.25rem;
+    }
+
+    .upload-zone {
+        padding: 1.25rem;
+    }
+
+    .upload-text-container {
+        padding: 0 1.25rem;
+    }
+
+    .upload-button {
+        padding: 0.75rem 1.25rem;
+    }
+}
+
+.back-button {
+    padding: 0.6rem 1.5rem;
+    margin-top: 2rem;
+    font-size: 1rem;	
+    font-weight: 600;
+    color: white;
+    background-color: #6b7280; /* Gray-500 */
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.25s ease, transform 0.15s ease;
+    display: inline-block;
+}
+
+.back-button:hover {
+    background-color: #4b5563; /* Gray-600 */
+    transform: translateY(-2px);
+}
+
+.back-button:active {
+    background-color: #374151; /* Gray-700 */
+    transform: translateY(0);
+}
