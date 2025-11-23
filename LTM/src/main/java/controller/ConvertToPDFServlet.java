@@ -21,7 +21,10 @@ public class ConvertToPDFServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    		
             throws ServletException, IOException {
+    	System.out.println(">>>> ConvertToPDFServlet START");
+
         request.setCharacterEncoding("UTF-8");
         Part filePart = request.getPart("fileUpload");
         String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
