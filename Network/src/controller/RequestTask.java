@@ -54,6 +54,11 @@ public class RequestTask implements Runnable {
                 return;
             }
 
+            if (header.startsWith("GETREQS|")) {
+                handleGetRequests(header, bout);
+                return;
+            }
+
             if (header.startsWith("DOWNLOAD|")) {
                 handleDownload(header, bout);
                 return;
@@ -121,6 +126,38 @@ public class RequestTask implements Runnable {
     }
 
     // ======================================================================
+    //  GETREQS|userId
+    //  Returns:
+    //    REQS|n
+    //    id,type,filename,status,result
+    //    ...
+    //    END
+    // ======================================================================
+    private void handleGetRequests(String header, BufferedOutputStream bout) throws IOException {
+        String[] parts = header.split("\\|");
+        if (parts.length < 2) {
+            writeLine(bout, "FAIL|BAD_GETREQS");
+            return;
+        }
+        int userId = Integer.parseInt(parts[1]);
+        java.util.List<RequestJob> list = ConversionQueue.getInstance().listByUser(userId);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("REQS|").append(list.size()).append("\n");
+        for (RequestJob j : list) {
+            sb.append(j.getId()).append(",");
+            sb.append(j.getType()).append(",");
+            sb.append(j.getOriginalFileName()).append(",");
+            sb.append(j.getStatus().name()).append(",");
+            sb.append(j.getResult() == null ? "" : j.getResult()).append("\n");
+        }
+        sb.append("END\n");
+
+        bout.write(sb.toString().getBytes(StandardCharsets.UTF_8));
+        bout.flush();
+    }
+
+    // ======================================================================
     //  UPLOAD|type|userId|filename|filesize
     // ======================================================================
     private void handleUpload(String header, BufferedInputStream bin, BufferedOutputStream bout) throws Exception {
@@ -162,39 +199,13 @@ public class RequestTask implements Runnable {
             return;
         }
 
-        String convertResult = ServerService.processConvert(type, userId, filename, temp.getAbsolutePath());
+        // Enqueue the conversion request and return immediately
+        ConversionQueue.getInstance().enqueue(type, userId, filename, temp.getAbsolutePath());
 
-        if (convertResult == null || !convertResult.startsWith("OK|")) {
-            writeLine(bout, convertResult == null ? "FAIL|CONVERT" : convertResult);
-            temp.delete();
-            return;
-        }
-
-        String outPath = convertResult.substring(3).trim();
-        File outFile = new File(outPath);
-
-        if (!outFile.exists()) {
-            writeLine(bout, "FAIL|OUTPUT_NOT_FOUND");
-            temp.delete();
-            return;
-        }
-
-        long outSize = outFile.length();
-
-        String outHeader = "FILE|OK|" + outFile.getName() + "|" + outSize + "\n";
-        bout.write(outHeader.getBytes(StandardCharsets.UTF_8));
+        writeLine(bout, "OK|QUEUED");
         bout.flush();
 
-        try (FileInputStream fis = new FileInputStream(outFile)) {
-            byte[] buf = new byte[8192];
-            int n;
-            while ((n = fis.read(buf)) != -1) {
-                bout.write(buf, 0, n);
-            }
-            bout.flush();
-        }
-
-        temp.delete();
+        // Do NOT delete temp here — the background processor will remove it after processing
     }
 
     // ======================================================================

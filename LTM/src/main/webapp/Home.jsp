@@ -8,6 +8,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DocConverter</title>
     <link rel="stylesheet" href="Home.css">
+    <script>
+        // If user opened Home.jsp directly, redirect to /Home to refresh data from server
+        (function(){
+            try {
+                var p = window.location.pathname || '';
+                if (p.endsWith('/Home.jsp') || p.endsWith('/Home.jsp/')) {
+                    window.location.replace('Home');
+                }
+            } catch(e){}
+        })();
+    </script>
 </head>
 <body>
     <%
@@ -31,12 +42,17 @@
                             <h1 class="logo-text"><%= appName %></h1>
                         </div>
                         <div class="logout-container">
-                        <form action="LogoutServlet" method="post">
-    						<button class="logout-button">
-        					<img src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded.png" alt="Logout Icon" class="logout-icon">
-        					<span>Logout</span>
-    						</button>
-    						</form>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <form action="RequestServlet" method="get">
+                                <button type="submit" class="logout-button">Requests</button>
+                            </form>
+                            <form action="LogoutServlet" method="post">
+                                <button class="logout-button">
+                                    <img src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded.png" alt="Logout Icon" class="logout-icon">
+                                    <span>Logout</span>
+                                </button>
+                            </form>
+                        </div>
 						</div>
                         
                     </div>
@@ -132,13 +148,9 @@
                 				<p class="conversion-info"><%= typeText %></p>
             				</div>
         				</div>
-        				<div class="item-actions">
-            				<a href="<%= link.getLink() %>" download>
-                			<img src="https://api.builder.io/api/v1/image/assets/734b695beb214eada95f691d10c9fe3f/34adeb1d3f5765661e4275b5f7ff2927ceeea41e?placeholderIfAbsent=true"
-                     		alt="Download"
-                     		class="download-icon"/>
-            				</a>
-        				</div>
+                        <div class="item-actions">
+                            <a href="DownloadServlet?key=<%= java.net.URLEncoder.encode(link.getLink(), "UTF-8") %>"> <img src="https://api.builder.io/api/v1/image/assets/734b695beb214eada95f691d10c9fe3f/34adeb1d3f5765661e4275b5f7ff2927ceeea41e?placeholderIfAbsent=true" alt="Download" class="download-icon"/> </a>
+                        </div>
     				</div>
 
 			<%

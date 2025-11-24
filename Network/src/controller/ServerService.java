@@ -2,9 +2,8 @@ package controller;
 
 import java.io.File;
 import java.util.Vector;
-
-import model.BEAN.Link;
 import model.BEAN.Account;
+import model.BEAN.Link;
 import model.BO.*;
 
 public class ServerService {
@@ -112,7 +111,9 @@ public class ServerService {
         // 2. Tìm trong folder downloads
         File downloads = new File("downloads");
         if (downloads.exists()) {
-            File f2 = new File(downloads, key);
+            // If key contains a folder prefix like "downloads/filename", use only the file name
+            String nameOnly = new File(key).getName();
+            File f2 = new File(downloads, nameOnly);
             if (f2.exists() && f2.isFile()) return f2.getAbsolutePath();
         }
 

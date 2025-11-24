@@ -8,6 +8,7 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import javax.servlet.*;
+import javax.servlet.ServletContext;
 import java.io.IOException;
 
 import client.FileSocketClient;
@@ -47,13 +48,24 @@ public class ConvertToPDFServlet extends HttpServlet {
 
         try {
             String result = fileClient.uploadFile(temp, type, userID, new File(downloadPath));
-            if (result != null && result.startsWith("OK|")) {
-                // result = OK|absoluteLocalPath
-                String localPath = result.substring(3);
-                String fileName = new File(localPath).getName();
-                request.setAttribute("downloadLink", "downloads/" + fileName);
+            if (result != null) {
+                if (result.equals("OK|QUEUED")) {
+                    // queued successfully — redirect back to Home
+                    request.getSession().setAttribute("info", "Yêu cầu đã được đưa vào hàng đợi.");
+                    response.sendRedirect(request.getContextPath() + "/Home");
+                    return;
+                }
+
+                if (result.startsWith("OK|")) {
+                    // result = OK|absoluteLocalPath
+                    String localPath = result.substring(3);
+                    String fileName = new File(localPath).getName();
+                    request.setAttribute("downloadLink", "downloads/" + fileName);
+                } else {
+                    request.setAttribute("errorMessage", result == null ? "No response" : result);
+                }
             } else {
-                request.setAttribute("errorMessage", result == null ? "No response" : result);
+                request.setAttribute("errorMessage", "No response");
             }
         } catch (Exception e) {
             request.setAttribute("errorMessage", "Lỗi kết nối: " + e.getMessage());

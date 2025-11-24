@@ -21,7 +21,7 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="D:/Nam3/LTM/BTnhom/Network/bin/lib/spire.doc-11.1.1.jar"/>
-	<classpathentry kind="lib" path="D:/Nam3/LTM/BTnhom/Network/bin/lib/spire.pdf-10.12.10.jar"/>
+	<classpathentry kind="lib" path="D:/New folder/LTM_P/LTM/Network/bin/lib/spire.doc-11.1.1.jar"/>
+	<classpathentry kind="lib" path="D:/New folder/LTM_P/LTM/Network/bin/lib/spire.pdf-10.12.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

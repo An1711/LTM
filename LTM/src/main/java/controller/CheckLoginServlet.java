@@ -71,7 +71,7 @@ public class CheckLoginServlet extends HttpServlet {
                 }
 
                 session.setAttribute("links", list);
-                response.sendRedirect(request.getContextPath() + "/Home.jsp");
+                response.sendRedirect(request.getContextPath() + "/Home");
                 return;
             } else {
                 String msg = (resp == null) ? "Server không phản hồi" : "Tài khoản hoặc mật khẩu không đúng";
