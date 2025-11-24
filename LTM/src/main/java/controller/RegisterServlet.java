@@ -14,8 +14,6 @@ import client.TextSocketClient;
 public class RegisterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    private static final String SERVER_HOST = "localhost";
-    private static final int SERVER_PORT = 8088;
 
     public RegisterServlet() {
         super();
@@ -52,7 +50,7 @@ public class RegisterServlet extends HttpServlet {
 
         try {
             // Create a text client for this request
-            TextSocketClient client = new TextSocketClient(SERVER_HOST, SERVER_PORT);
+        	TextSocketClient client = new TextSocketClient(getServletContext());
 
             // Build command for server socket
             String command = "REGISTER|" + username + "|" + password;

@@ -2,10 +2,8 @@ package controller;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
 
-import model.BEAN.Link;
-import model.DAO.ConvertToPDFDAO;
+import model.BO.ConvertToPDFBO;
 
 public class WorkerManager {
 
@@ -17,14 +15,12 @@ public class WorkerManager {
     // ============================================================
     public static boolean isWorkerOnline() {
         try (Socket s = new Socket(WORKER_HOST, WORKER_PORT)) {
-            // gửi PING
             DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-            dos.writeUTF("PING|0|0|ping|0");  // header giả để worker nhận
+            dos.writeUTF("PING|0|0|ping|0");
             dos.flush();
 
-            // đọc phản hồi nếu worker chạy
             DataInputStream dis = new DataInputStream(s.getInputStream());
-            dis.readUTF();  // worker sẽ trả FAIL hoặc timeout
+            dis.readUTF(); 
             return true;
 
         } catch (Exception e) {
@@ -61,40 +57,40 @@ public class WorkerManager {
                 dos.flush();
             }
 
-            // ===== 3. Nhận phản hồi =====
+            // ===== 3. Nhận phản hồi HEADER =====
             String respHeader = dis.readUTF();
             if (!respHeader.startsWith("FILE|OK|")) {
-                return "FAIL|CONVERT_ERROR:" + respHeader; // FAIL|... hoặc lỗi khác
+                return "FAIL|CONVERT_ERROR:" + respHeader;
             }
 
-            // tách thông tin file
             String[] parts = respHeader.split("\\|", 4);
             String fileName = parts[2];
-            long fileSizetemp = Long.parseLong(parts[3]);
+            long fileSizeTemp = Long.parseLong(parts[3]);
 
-            // tạo file lưu vào downloads/
+            // ===== 4. Lưu file nhận được vào downloads/ =====
             File downloadsDir = new File("downloads");
             if (!downloadsDir.exists()) downloadsDir.mkdirs();
             File outFile = new File(downloadsDir, fileName);
 
-            // đọc nhị phân từ socket và lưu vào file
             try (FileOutputStream fos = new FileOutputStream(outFile)) {
                 byte[] buf = new byte[8192];
-                long remain = fileSizetemp;
+                long remain = fileSizeTemp;
                 int read;
-                while (remain > 0 && (read = dis.read(buf, 0, (int)Math.min(buf.length, remain))) != -1) {
+                while (remain > 0 &&
+                       (read = dis.read(buf, 0, (int)Math.min(buf.length, remain))) != -1) {
                     fos.write(buf, 0, read);
                     remain -= read;
                 }
                 fos.flush();
             }
-            ConvertToPDFDAO dao = new ConvertToPDFDAO();
-            Link l = new Link();
-            l.setID(userId);
-            l.setType(type == 1);
-            l.setLink(outFile.getAbsolutePath());
 
-            if (!dao.saveLink(l)) {
+            // ===================================================
+            // 5. GỌI BO để lưu link vào DB (BO sẽ gọi DAO)
+            // ===================================================
+            ConvertToPDFBO bo = new ConvertToPDFBO();
+            boolean saved = bo.saveConvertedLink(type, userId, outFile.getAbsolutePath());
+
+            if (!saved) {
                 return "FAIL|DB_SAVE_FAILED";
             }
 

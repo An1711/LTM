@@ -80,4 +80,20 @@ public class ConvertToPDFBO {
             return "FAIL|EXCEPTION:" + e.getMessage();
         }
     }
+    
+    public boolean saveConvertedLink(int type, int userId, String outPath) {
+        try {
+            ConvertToPDFDAO dao = new ConvertToPDFDAO();
+            Link l = new Link();
+            l.setID(userId);
+            l.setType(type == 1);
+            l.setLink(outPath);
+
+            return dao.saveLink(l);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

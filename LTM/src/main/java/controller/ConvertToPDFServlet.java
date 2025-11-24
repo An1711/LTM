@@ -43,7 +43,8 @@ public class ConvertToPDFServlet extends HttpServlet {
             Files.copy(in, temp.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         }
 
-        FileSocketClient fileClient = new FileSocketClient("localhost", 8088, 10000);
+        FileSocketClient fileClient = new FileSocketClient(getServletContext());
+
         try {
             String result = fileClient.uploadFile(temp, type, userID, new File(downloadPath));
             if (result != null && result.startsWith("OK|")) {
@@ -54,7 +55,7 @@ public class ConvertToPDFServlet extends HttpServlet {
             } else {
                 request.setAttribute("errorMessage", result == null ? "No response" : result);
             }
-        } catch (Exception e) {	
+        } catch (Exception e) {
             request.setAttribute("errorMessage", "Lỗi kết nối: " + e.getMessage());
         } finally {
             temp.delete();

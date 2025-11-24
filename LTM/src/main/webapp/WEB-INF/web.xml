@@ -4,4 +4,24 @@
   <welcome-file-list>
     <welcome-file>LoginServlet</welcome-file>
   </welcome-file-list>
+  <context-param>
+    <param-name>SERVER_HOST</param-name>
+    <param-value>localhost</param-value>
+</context-param>
+
+<context-param>
+    <param-name>SERVER_PORT</param-name>
+    <param-value>8088</param-value>
+</context-param>
+
+<context-param>
+    <param-name>WORKER_HOST</param-name>
+    <param-value>localhost</param-value>
+</context-param>
+
+<context-param>
+    <param-name>WORKER_PORT</param-name>
+    <param-value>9999</param-value>
+</context-param>
 </web-app>
+
