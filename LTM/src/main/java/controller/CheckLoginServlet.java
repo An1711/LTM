@@ -30,31 +30,42 @@ public class CheckLoginServlet extends HttpServlet {
         try {
             String cmd = String.format("LOGIN|%s|%s", username, password);
             String resp = socketClient.sendCommand(cmd);
+            
+				       
+
+            
             if (resp != null && resp.startsWith("OK|")) {
                 int userId = Integer.parseInt(resp.substring(3).trim());
                 session.removeAttribute("error");
                 session.setAttribute("userID", userId);
 
-                // get data
+             // get data từ server
                 String dataResp = socketClient.sendCommand("GETDATA|" + userId);
+                			
+                			
+
+                
                 Vector<Link> list = new Vector<>();
+
                 if (dataResp != null && dataResp.startsWith("DATA|")) {
-                    // simple single-line payload support if you implement differently, adjust accordingly
-                    // For now assume ServerService returns "DATA|<payload...>" or multi-line - you'd adapt
-                    // Here we treat payload as after "DATA|"
-                    String payload = dataResp.substring(5);
-                    if (!payload.trim().isEmpty()) {
-                        String[] items = payload.split(";");
-                        for (String item : items) {
-                            String[] f = item.split(",", 3);
-                            if (f.length >= 3) {
-                                try {
-                                    int id = Integer.parseInt(f[0].trim());
-                                    boolean type = "1".equals(f[1].trim());
-                                    String link = f[2].trim();
-                                    list.add(new Link(id, link, type));
-                                } catch (NumberFormatException ignored) {}
-                            }
+
+                    String[] lines = dataResp.split("\n");
+
+                    for (int i = 1; i < lines.length; i++) {
+                        String line = lines[i].trim();
+
+                        if (line.equals("END")) break;
+                        if (line.isEmpty()) continue;
+
+                        String[] f = line.split(",", 3);
+                        if (f.length == 3) {
+                            try {
+                                int id = Integer.parseInt(f[0].trim());
+                                boolean type = f[1].trim().equals("1");
+                                String link = f[2].trim();
+                                list.add(new Link(id, link, type));
+                       
+                            } catch (NumberFormatException e) {}
                         }
                     }
                 }

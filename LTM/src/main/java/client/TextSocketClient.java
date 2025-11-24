@@ -29,8 +29,12 @@ public class TextSocketClient {
     }
 
     public String sendCommand(String command) throws Exception {
+
+      //  System.out.println("[CLIENT_SOCKET] sendCommand = " + command);
+
         try (Socket socket = new Socket(host, port)) {
             socket.setSoTimeout(soTimeoutMs);
+
             OutputStream out = socket.getOutputStream();
             out.write((command + "\n").getBytes(StandardCharsets.UTF_8));
             out.flush();
@@ -38,10 +42,32 @@ public class TextSocketClient {
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 
-            return reader.readLine();
+            StringBuilder sb = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+
+                sb.append(line).append("\n");
+                System.out.println("[CLIENT_SOCKET] recv = " + line);
+
+                // === Điều kiện dừng ===
+                if (line.startsWith("OK|") || line.startsWith("FAIL|")) {
+                    break; // lệnh 1-line
+                }
+
+                if (line.equals("END")) {
+                    break; // dữ liệu GETDATA kết thúc
+                }
+            }
+
+            String resp = sb.toString();
+            System.out.println("[CLIENT_SOCKET] respRAW:\n" + resp);
+
+            return resp;
 
         } catch (SocketTimeoutException ste) {
             throw new Exception("Timeout waiting for server");
         }
     }
+
 }
