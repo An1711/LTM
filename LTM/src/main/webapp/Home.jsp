@@ -132,7 +132,6 @@
                 				<p class="conversion-info"><%= typeText %></p>
             				</div>
         				</div>
-
         				<div class="item-actions">
             				<a href="<%= link.getLink() %>" download>
                 			<img src="https://api.builder.io/api/v1/image/assets/734b695beb214eada95f691d10c9fe3f/34adeb1d3f5765661e4275b5f7ff2927ceeea41e?placeholderIfAbsent=true"

@@ -68,33 +68,40 @@ public class WorkerManager {
             long fileSizeTemp = Long.parseLong(parts[3]);
 
             // ===== 4. Lưu file nhận được vào downloads/ =====
-            File downloadsDir = new File("downloads");
+            String basePath = new File("").getAbsolutePath(); 
+            // -> Thư mục gốc (tương đương với thư mục chạy project, VD: tomcat/webapps/LTM_pdf)
+
+            File downloadsDir = new File(basePath + File.separator + "downloads");
             if (!downloadsDir.exists()) downloadsDir.mkdirs();
+
             File outFile = new File(downloadsDir, fileName);
 
+            // Ghi file
             try (FileOutputStream fos = new FileOutputStream(outFile)) {
-                byte[] buf = new byte[8192];
-                long remain = fileSizeTemp;
-                int read;
-                while (remain > 0 &&
-                       (read = dis.read(buf, 0, (int)Math.min(buf.length, remain))) != -1) {
-                    fos.write(buf, 0, read);
-                    remain -= read;
-                }
-                fos.flush();
+            	byte[] buf = new byte[8192];
+            	long remain = fileSizeTemp;
+            	int read;
+            	while (remain > 0 && (read = dis.read(buf, 0, (int) Math.min(buf.length, remain))) != -1) {
+            		fos.write(buf, 0, read);
+            		remain -= read;
+            	}
+            	fos.flush();
             }
 
-            // ===================================================
-            // 5. GỌI BO để lưu link vào DB (BO sẽ gọi DAO)
-            // ===================================================
-            ConvertToPDFBO bo = new ConvertToPDFBO();
-            boolean saved = bo.saveConvertedLink(type, userId, outFile.getAbsolutePath());
+         // ===================================================
+         // Sửa: chỉ lưu relative link
+         // ===================================================
+         String relativeLink = "downloads/" + fileName;
 
-            if (!saved) {
-                return "FAIL|DB_SAVE_FAILED";
-            }
+         // 5. Gọi BO để lưu link vào DB
+         ConvertToPDFBO bo = new ConvertToPDFBO();
+         boolean saved = bo.saveConvertedLink(type, userId, relativeLink);
 
-            return "OK|" + outFile.getAbsolutePath();
+         if (!saved) {
+             return "FAIL|DB_SAVE_FAILED";
+         }
+
+         return "OK|" + relativeLink;
 
         } catch (Exception e) {
             e.printStackTrace();

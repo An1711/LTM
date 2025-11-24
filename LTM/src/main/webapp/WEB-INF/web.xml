@@ -6,7 +6,7 @@
   </welcome-file-list>
   <context-param>
     <param-name>SERVER_HOST</param-name>
-    <param-value>localhost</param-value>
+    <param-value>26.241.40.229</param-value>
 </context-param>
 
 <context-param>
