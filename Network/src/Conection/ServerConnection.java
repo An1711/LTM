@@ -8,7 +8,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import Service.RequestTask;
+import controller.RequestTask;
 
 public class ServerConnection {
 

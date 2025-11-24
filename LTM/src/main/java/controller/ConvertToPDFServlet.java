@@ -54,7 +54,7 @@ public class ConvertToPDFServlet extends HttpServlet {
             } else {
                 request.setAttribute("errorMessage", result == null ? "No response" : result);
             }
-        } catch (Exception e) {
+        } catch (Exception e) {	
             request.setAttribute("errorMessage", "Lỗi kết nối: " + e.getMessage());
         } finally {
             temp.delete();
